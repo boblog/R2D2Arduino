@@ -43,7 +43,7 @@ void ListenForSerialInput() {
   }
 }
 
-void IsEndPointsActive(int pin1, int pin2) {
+void ListenForCenterEndPointsActive(int pin1, int pin2) {
 
   int UpSwitchPinState = digitalRead(pin1);
   int DownSwitchPinState = digitalRead(pin2);
@@ -57,24 +57,21 @@ void IsEndPointsActive(int pin1, int pin2) {
   }
 }
 
-void IsParkedUp(int pin) {
-  if (state == PARKUP && digitalRead(pin) == LOW)
+void ListenForCenterEndPointsParked(int pin1, int pin2) {
+  if (state == PARKUP && digitalRead(pin1) == LOW)
   {
     ExtendCenterLeg();
-    if (digitalRead(pin) == HIGH)
+    if (digitalRead(pin1) == HIGH)
     {
       StopCenterLeg();
     }
   }
-}
-void IsParkedDown(int pin) {
-  if (state == PARKDOWN && digitalRead(pin) == LOW)
+  if (state == PARKDOWN && digitalRead(pin2) == LOW)
   {
     RetractCenterLeg();
-    if (digitalRead(pin) == HIGH)
+    if (digitalRead(pin2) == HIGH)
     {
       StopCenterLeg();
     }
   }
 }
-

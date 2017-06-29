@@ -20,8 +20,6 @@ enum State {
 
 #define UpSwitchPin 0
 #define DownSwitchPin 2
-#define previousSwitchState STOP
-#define switchState STOP
 
 void setup() {
   // MotorShield
@@ -41,10 +39,9 @@ void setup() {
 
 void loop() {
   ListenForSerialInput();
-  IsEndPointsActive(UpSwitchPin, DownSwitchPin);
-  IsParkedUp(UpSwitchPin);
-  IsParkedDown(DownSwitchPin);
-
+  ListenForCenterEndPointsActive(UpSwitchPin, DownSwitchPin);
+  ListenForCenterEndPointsParked(UpSwitchPin, DownSwitchPin);
+ 
   Serial.print("State:");
   Serial.println(state);
 }
