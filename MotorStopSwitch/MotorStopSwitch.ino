@@ -23,11 +23,6 @@ enum State {
 #define previousSwitchState STOP
 #define switchState STOP
 
-bool  topReached,
-      bottomReached,
-      endStopActive,
-      isMoving = false;
-
 void setup() {
   // MotorShield
   MOTORSHIELD_LOWER.begin();  // create with the default frequency 1.6KHz
@@ -47,22 +42,9 @@ void setup() {
 void loop() {
   ListenForSerialInput();
   IsEndPointsActive(UpSwitchPin, DownSwitchPin);
-  if (state == PARKUP && digitalRead(UpSwitchPin) == LOW)
-  {
-    ExtendCenterLeg();
-    if (digitalRead(UpSwitchPin) == HIGH)
-    {
-      StopCenterLeg();
-    }
-  }
-  if (state == PARKDOWN && digitalRead(DownSwitchPin) == LOW)
-  {
-    RetractCenterLeg();
-    if (digitalRead(DownSwitchPin) == HIGH)
-    {
-      StopCenterLeg();
-    }
-  }
+  IsParkedUp(UpSwitchPin);
+  IsParkedDown(DownSwitchPin);
+
   Serial.print("State:");
   Serial.println(state);
 }

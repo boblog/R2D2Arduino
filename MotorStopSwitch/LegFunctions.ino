@@ -1,7 +1,6 @@
 void RetractCenterLeg()
 {
   Serial.println("RetractCenterLeg");
-  isMoving = true;
   centerLegMotor->setSpeed(100);
   centerLegMotor->run(BACKWARD);
 }
@@ -9,7 +8,6 @@ void RetractCenterLeg()
 void ExtendCenterLeg()
 {
   Serial.println("ExtendCenterLeg");
-  isMoving = true;
   centerLegMotor->setSpeed(100);
   centerLegMotor->run(FORWARD);
 }
@@ -17,14 +15,12 @@ void ExtendCenterLeg()
 void StopCenterLeg()
 {
   Serial.println("StopCenterLeg");
-  isMoving = false;
   centerLegMotor->setSpeed(0);
   //centerLegMotor->run(RELEASE);
 }
 
 void MoveCenterLeg(int _direction, int _speed) {
   Serial.println("MoveCenterLeg");
-  isMoving = true;
   centerLegMotor->setSpeed(_speed);
   centerLegMotor->run(_direction);
 }
@@ -59,5 +55,26 @@ void IsEndPointsActive(int pin1, int pin2) {
   if (DownSwitchPinState == LOW) {
     state = PARKDOWN;
   }
-  //return false;
 }
+
+void IsParkedUp(int pin) {
+  if (state == PARKUP && digitalRead(pin) == LOW)
+  {
+    ExtendCenterLeg();
+    if (digitalRead(pin) == HIGH)
+    {
+      StopCenterLeg();
+    }
+  }
+}
+void IsParkedDown(int pin) {
+  if (state == PARKDOWN && digitalRead(pin) == LOW)
+  {
+    RetractCenterLeg();
+    if (digitalRead(pin) == HIGH)
+    {
+      StopCenterLeg();
+    }
+  }
+}
+
