@@ -1,14 +1,14 @@
 void RetractCenterLeg()
 {
   Serial.println("RetractCenterLeg");
-  centerLegMotor->setSpeed(100);
+  centerLegMotor->setSpeed(GlobalMotorSpeed);
   centerLegMotor->run(BACKWARD);
 }
 
 void ExtendCenterLeg()
 {
   Serial.println("ExtendCenterLeg");
-  centerLegMotor->setSpeed(100);
+  centerLegMotor->setSpeed(GlobalMotorSpeed);
   centerLegMotor->run(FORWARD);
 }
 
@@ -25,9 +25,68 @@ void MoveCenterLeg(int _direction, int _speed) {
   centerLegMotor->run(_direction);
 }
 
+void LegMode(int legMode)
+{
+  int rightLegPos;
+  int leftLegPos;
+  rightLegPos = analogRead(RightLegPotPin);
+  rightLegPos = map(rightLegPos, 0, 1023, 0 , 36);
+
+  Serial.println("GOING TO 3 LEGMODE: ");
+  shoulderRightMotor->setSpeed(200);
+
+
+  if (legMode == LEGMODE2) {
+    while (rightLegPos > 19) {
+      //   LegMode(legMode);
+      rightLegPos = analogRead(RightLegPotPin);
+      rightLegPos = map(rightLegPos, 0, 1023, 0 , 36);
+
+      leftLegPos = analogRead(LeftLegPotPin);
+      leftLegPos = map(leftLegPos, 0, 1023, 0 , 36);
+
+      Serial.println(rightLegPos);
+
+      shoulderRightMotor->run(BACKWARD);
+      if (rightLegPos == 19)
+      {
+        shoulderRightMotor->setSpeed(0);
+        //shoulderRightMotor->run(RELEASE);
+      }
+    }
+  }
+  if (legMode == LEGMODE3) {
+    while (rightLegPos < 36) {
+      //   LegMode(legMode);
+      rightLegPos = analogRead(RightLegPotPin);
+      rightLegPos = map(rightLegPos, 0, 1023, 0 , 36);
+
+      leftLegPos = analogRead(LeftLegPotPin);
+      leftLegPos = map(leftLegPos, 0, 1023, 0 , 36);
+
+      Serial.println(rightLegPos);
+
+      shoulderRightMotor->run(FORWARD);
+      if (rightLegPos == 36)
+      {
+        shoulderRightMotor->setSpeed(0);
+        //shoulderRightMotor->run(RELEASE);
+      }
+    }
+  }
+}
+
 void ListenForSerialInput() {
   int value = Serial.read();
   switch (value) {
+    case '3':
+      state = LEGMODE3;
+      LegMode(LEGMODE3);
+      break;
+    case '2':
+      state = LEGMODE2;
+      LegMode(LEGMODE2);
+      break;
     case 'd':
       state = DOWN;
       ExtendCenterLeg();
@@ -39,6 +98,14 @@ void ListenForSerialInput() {
     case 'C':
       state = STOP;
       StopCenterLeg();
+      break;
+    case 's':
+      state = STOP;
+      shoulderRightMotor->setSpeed(0);
+      shoulderLeftMotor->setSpeed(0);
+      centerLegMotor->setSpeed(0);
+      domeMotor->setSpeed(0);
+      Serial.println("ALL MOTORS STOP");
       break;
   }
 }
