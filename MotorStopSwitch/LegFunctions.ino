@@ -25,89 +25,38 @@ void MoveCenterLeg(int _direction, int _speed) {
   centerLegMotor->run(_direction);
 }
 
-void LegMode(int legMode)
-{
-  int rightLegPos;
-  int leftLegPos;
-  rightLegPos = analogRead(RightLegPotPin);
-  rightLegPos = map(rightLegPos, 0, 1023, 0 , 36);
-
-  Serial.println("GOING TO 3 LEGMODE: ");
-  shoulderRightMotor->setSpeed(200);
-
-
-  if (legMode == LEGMODE2) {
-    while (rightLegPos > 19) {
-      //   LegMode(legMode);
-      rightLegPos = analogRead(RightLegPotPin);
-      rightLegPos = map(rightLegPos, 0, 1023, 0 , 36);
-
-      leftLegPos = analogRead(LeftLegPotPin);
-      leftLegPos = map(leftLegPos, 0, 1023, 0 , 36);
-
-      Serial.println(rightLegPos);
-
-      shoulderRightMotor->run(BACKWARD);
-      if (rightLegPos == 19)
-      {
-        shoulderRightMotor->setSpeed(0);
-        //shoulderRightMotor->run(RELEASE);
-      }
-    }
-  }
-  if (legMode == LEGMODE3) {
-    while (rightLegPos < 36) {
-      //   LegMode(legMode);
-      rightLegPos = analogRead(RightLegPotPin);
-      rightLegPos = map(rightLegPos, 0, 1023, 0 , 36);
-
-      leftLegPos = analogRead(LeftLegPotPin);
-      leftLegPos = map(leftLegPos, 0, 1023, 0 , 36);
-
-      Serial.println(rightLegPos);
-
-      shoulderRightMotor->run(FORWARD);
-      if (rightLegPos == 36)
-      {
-        shoulderRightMotor->setSpeed(0);
-        //shoulderRightMotor->run(RELEASE);
-      }
-    }
-  }
+void StopShoulderMotors(bool released) {
+  Log("STOPPING after going into 3 LegMode");
+  
+  shoulderLeftMotor->setSpeed(0);
+  if (released)
+    shoulderLeftMotor->run(RELEASE);
+  
+  shoulderRightMotor->setSpeed(0);
+  if (released)
+    shoulderRightMotor->run(RELEASE);
 }
 
-void ListenForSerialInput() {
-  int value = Serial.read();
-  switch (value) {
-    case '3':
-      state = LEGMODE3;
-      LegMode(LEGMODE3);
-      break;
-    case '2':
-      state = LEGMODE2;
-      LegMode(LEGMODE2);
-      break;
-    case 'd':
-      state = DOWN;
-      ExtendCenterLeg();
-      break;
-    case 'u':
-      state = UP;
-      RetractCenterLeg();
-      break;
-    case 'C':
-      state = STOP;
-      StopCenterLeg();
-      break;
-    case 's':
-      state = STOP;
-      shoulderRightMotor->setSpeed(0);
-      shoulderLeftMotor->setSpeed(0);
-      centerLegMotor->setSpeed(0);
-      domeMotor->setSpeed(0);
-      Serial.println("ALL MOTORS STOP");
-      break;
+void LegMode(int legMode)
+{
+  shoulderLeftMotor->setSpeed(GlobalLegSpeed);
+  shoulderRightMotor->setSpeed(GlobalLegSpeed);
+
+  if (legMode == LEGMODE3) {
+    while ( (abs(getPotPos(LeftLegPotPin) > Left3LegModePotValue)) || (abs(getPotPos(RightLegPotPin) > Right3LegModePotValue)) ) {
+      Log("Going into 3 LegMode");
+      shoulderLeftMotor->run(BACKWARD);
+      shoulderRightMotor->run(BACKWARD);
+    };
   }
+  if (legMode == LEGMODE2) {
+    while ( (abs(getPotPos(LeftLegPotPin) < Left2LegModePotValue)) || (abs(getPotPos(RightLegPotPin) < Right2LegModePotValue)) ) {
+      Log("Going into 2 LegMode");
+      shoulderLeftMotor->run(FORWARD);
+      shoulderRightMotor->run(FORWARD);
+    };
+  }
+  StopShoulderMotors(false);
 }
 
 void ListenForCenterEndPointsActive(int pin1, int pin2) {
@@ -141,4 +90,12 @@ void ListenForCenterEndPointsParked(int pin1, int pin2) {
       StopCenterLeg();
     }
   }
+}
+
+
+
+int getPotPos(int pot) {
+  int val = abs(analogRead(pot));
+  val = map(val, 0, 1023, 0 , 36);
+  return val;
 }
